@@ -53,6 +53,13 @@ app.post("/urls/:shortURL/delete", (req, res) => {
   res.redirect("/urls");
 });
 
+app.post("/urls/:shortURL", (req, res) => {
+  let shortURL = req.params.shortURL;
+  let newUrl = req.body.newUrl;
+  urlDatabase[shortURL] = newUrl;
+  res.redirect("/urls");
+});
+
 app.get("/urls.json", (req, res) => {
   res.json(urlDatabase); //JSON string representing the entire urlDatabase object
 });
