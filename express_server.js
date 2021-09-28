@@ -20,26 +20,14 @@ app.get("/", (req, res) => {
   res.send("Hello!");
 });
 
-app.get("/urls", (req, res) => {
-  const templateVars = { urls: urlDatabase };
-  res.render("urls_index", templateVars);
-});
-
 app.get("/urls/new", (req, res) => {
   res.render("urls_new");
 });
 
-app.post("/urls", (req, res) => {
-  const shortURL = generateRandomString();
-  urlDatabase[shortURL] = req.body.longURL;
-  res.redirect(`/urls/${shortURL}`);  //redirects to /urls/:shortURL
-});
-
-
 app.get("/urls/:shortURL", (req, res) => {
   const templateVars = { 
-    shortURL: req.params.shortURL, 
-    longURL: urlDatabase[req.params.shortURL] };
+    shortURL: req.params.shortURL,   //this is b2xVn2
+    longURL: urlDatabase[req.params.shortURL] };  //this is lighthouselabs.ca
   res.render("urls_show", templateVars);
 });
 
@@ -48,16 +36,27 @@ app.get("/u/:shortURL", (req, res) => {
   res.redirect(longURL);
 });
 
-app.post("/urls/:shortURL/delete", (req, res) => {
-  delete urlDatabase[req.params.shortURL]
-  res.redirect("/urls");
-});
-
 app.post("/urls/:shortURL", (req, res) => {
   let shortURL = req.params.shortURL;
   let newUrl = req.body.newUrl;
   urlDatabase[shortURL] = newUrl;
   res.redirect("/urls");
+});
+
+app.post("/urls/:shortURL/delete", (req, res) => {
+  delete urlDatabase[req.params.shortURL]
+  res.redirect("/urls");
+});
+
+app.get("/urls", (req, res) => {
+  const templateVars = { urls: urlDatabase };
+  res.render("urls_index", templateVars);
+});
+
+app.post("/urls", (req, res) => {
+  const shortURL = generateRandomString();
+  urlDatabase[shortURL] = req.body.longURL;
+  res.redirect(`/urls/${shortURL}`);  //redirects to /urls/:shortURL
 });
 
 app.get("/urls.json", (req, res) => {
