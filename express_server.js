@@ -37,8 +37,12 @@ const findUserByEmail = (email, users) => {
   return users[userID];
 }
   }
+  if (email === '') {
+    return undefined;
+  }
   return false;
 };
+console.log(findUserByEmail('', users));
 
 const createUser = (email, password, users) => {
   const id = generateRandomString();
@@ -87,7 +91,10 @@ app.post("/register", (req, res) => {
   const foundUser = findUserByEmail(email, users);
   if (foundUser) {
     return res.status(401).send('Sorry, that user is already in use!');
-  } 
+  }  
+  if (foundUser === undefined) {
+    return res.status(400).send('Please enter an email and password!');
+  }
   // 3) did not find user (foundUser is false) so create a new user
   const userID = createUser(email, password, users);
 
