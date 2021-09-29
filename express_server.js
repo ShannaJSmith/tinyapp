@@ -72,10 +72,9 @@ app.get("/set", (req, res) => {
  });
 
 app.get("/register", (req, res) => {
-  const templateVars = {
-    username: req.cookies["username"]
-  };
-  res.render("register", templateVars);
+  const templateVars = { user: null };
+    
+  res.render("register", templateVars); //displays the register page
 });
 
 app.post("/register", (req, res) => {
@@ -100,8 +99,11 @@ res.redirect('/urls');
 });
 
 app.get("/urls/new", (req, res) => {
+  const userID = req.cookies['user_id'];
+  const loggedIn = users[userID];
+  
   const temaplateVars = {
-  username: req.cookies["username"]
+  user: loggedIn
 };
   res.render("urls_new", temaplateVars);
 });
@@ -112,10 +114,13 @@ app.get("/u/:shortURL", (req, res) => {
 });
 
 app.get("/urls/:shortURL", (req, res) => {
+  const userID = req.cookies['user_id'];
+  const loggedIn = users[userID];
+
   const templateVars = { 
     shortURL: req.params.shortURL,   //this is b2xVn2
     longURL: urlDatabase[req.params.shortURL],  //this is lighthouselabs.ca
-    username: req.cookies["username"] };
+    user: loggedIn };
   res.render("urls_show", templateVars);
 });
 
@@ -132,8 +137,12 @@ app.post("/urls/:shortURL/delete", (req, res) => {
 });
 
 app.get("/urls", (req, res) => {
-  const templateVars = { urls: urlDatabase,
-    username: req.cookies["username"] };
+  const userID = req.cookies['user_id'];
+  const loggedIn = users[userID];
+
+  const templateVars = { 
+    urls: urlDatabase,
+    user: loggedIn };
   res.render("urls_index", templateVars);
 });
 
@@ -143,6 +152,11 @@ app.post("/urls", (req, res) => {  //when a post request is made to /urls redire
   urlDatabase[shortURL] = longURL;
   res.redirect(`/urls/${shortURL}`);  //redirects to /urls/:shortURL
 });
+
+// app.get("/login", (req, res) => {
+//   const templateVars = { user: null }; //login page assumes you're not already logged in so no user is logged
+//   res.render('login', templateVars);
+// });
 
 app.post("/login", (req, res) => {
   res.cookie('username', req.body.username);
