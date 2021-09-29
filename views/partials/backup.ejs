@@ -10,18 +10,25 @@
         <a class="nav-item nav-link" href="/urls/new">Create New URL</a>
       </div>
     </div>
-    <!--Login|Register links and login confirmation with logout button-->
-    <% if (!user) {%>
-      <div class="navbar-nav">
-        <a class="nav-item nav-link" href="/login">Login</a>
-          <a class="nav-item nav-link" href="/register">Register</a>
-          </div> 
-    <% } else { %>
+
+    <div class="navbar-nav">
+    <div class="nav-item nav-link" href="/login">Login</div>
+      <div class="nav-item nav-link" href="/register">Register</div>
+      </div>
+      
+    <% if (user) {%>
       <form class="form-inline" method="POST" action="/logout">
-      <h5 style="margin: 0.5em; color: white">Konnichiwa🙇🏽‍♀️🙇🏽 <%= user.email %> 🙇🏽🙇🏽‍♀️!!!</h5>
+        <h5 style="margin: 0.5em">Logged in as: <%= user.email %>!</h5>
         <button type="submit" class="btn btn-outline-dark">Logout</button>
       </form>
+    <% } else { %>
+      <form class="form-inline" method="POST" action="/login">
+        <input class="form-control" type="text" name="username" placeholder="Enter your username" style="width: 300px; margin: 1em" required>
+         <button type="submit" class="btn btn-outline-dark">Login</button>
+      </form>
     <% } %>
+
+   
+
   </nav>
 </header>
-

@@ -1,17 +1,14 @@
+//*********************Server setup & Dependencies*********//
 const express = require("express");
 const bodyParser = require("body-parser");
 const cookieParser = require('cookie-parser');
 const app = express();
 const PORT = 8080; 
-
 app.use(bodyParser.urlencoded({extended: true}));
 app.use(cookieParser());
 app.set("view engine", "ejs");
 
-function generateRandomString() {
-  return Math.random().toString(36).substring(2, 8);
-}
-
+//*******************DATABASE***************************//
 const urlDatabase = {
   "b2xVn2": "http://www.lighthouselabs.ca",
   "9sm5xK": "http://www.google.com"
@@ -29,30 +26,45 @@ const users = {
     password: "dishwasher-funk"
   }
 };
+//****************HELPER FUNCTIONS*************//
 
-//HELPER FUNCTIONS FOR AUTHENTICATION:
-const findUserByEmail = (email, users) => {
+function generateRandomString() {
+  return Math.random().toString(36).substring(2, 8);
+}
+
+const findUserByEmail = (email, users) => {  //returns user info if matched, undefined if nothing inputed and false if new email used
   for (const userID in users) {
     if (email === users[userID].email) {
   return users[userID];
+  }
 }
-  }
-  if (email === '') {
-    return undefined;
-  }
   return false;
 };
-console.log(findUserByEmail('', users));
+//console.log(findUserByEmail('user2@example.com', users));
 
-const createUser = (email, password, users) => {
-  const id = generateRandomString();
-  users[id] = {
-    id,
+const createUser = (email, password, users) => {  //creates the randomly generated userID string for the inputted email/password
+  const userID = generateRandomString();
+  users[userID] = {
+    id: userID,
     email,
     password
   };
-  return id;
+  return userID;
 };
+// console.log(createUser('bob@hotmail.com', 'abc', users)); --> prints the randomly generated ID
+// console.log(users);  -->now the database includes the newly generated user info
+
+const authenticateUser = (email, password, users) => {  //returns entire user info (id, email, password)
+  const foundUser = findUserByEmail(email, users);
+  if (foundUser && foundUser.password === password) {  
+    return foundUser; // if matched log in
+  } 
+  return false; //if passwords don't match return error msg
+};
+//console.log(authenticateUser("ufgsgs", "dishwasher-funk", users)) //password or email doesn't match anything in the database so false
+
+
+//*************************************************//
 
 app.get("/", (req, res) => {
   res.send("Hello!");
@@ -75,6 +87,8 @@ app.get("/set", (req, res) => {
   res.send(`a = ${a}`);  //will have a reference error because a is not accessible here
  });
 
+ //*************************************************//
+
 app.get("/register", (req, res) => {
   const templateVars = { user: null };
     
@@ -85,14 +99,16 @@ app.post("/register", (req, res) => {
   // 1) extract user info from body of request using req.body
   const id = generateRandomString();
   const email = req.body.email;
-  const password = req.body.password; //const {email, password } = req.body; <- destructuring SHORTFORM
+  const password = req.body.password; //"const {email, password } = req.body;" <- destructuring SHORTFORM
   //console.log(id, email, password); shows me the random id generated and what is returned from the browser when an email/password is inputed
   // 2) check if user already exists
   const foundUser = findUserByEmail(email, users);
+  //console.log('foundUser:', foundUser);
   if (foundUser) {
-    return res.status(401).send('Sorry, that user is already in use!');
+    res.status(401).send('Sorry, that user is already in use!');
+    return;
   }  
-  if (foundUser === undefined) {
+  if (!email || !password) {
     return res.status(400).send('Please enter an email and password!');
   }
   // 3) did not find user (foundUser is false) so create a new user
@@ -105,14 +121,40 @@ app.post("/register", (req, res) => {
 res.redirect('/urls');
 });
 
+app.get("/login", (req, res) => {
+  const templateVars = { user: null }; //login page assumes you're not already logged in so no user is logged
+  res.render('login', templateVars);
+});
+
+app.post("/login", (req, res) => {
+  //extract email+password from req.body
+  const email = req.body.email;
+  const password = req.body.password;
+  //retrieve user from database using helper function
+ const user = authenticateUser(email, password, users);
+ if (user) {
+  res.cookie('user_id', user.id); //changed from res.cookie('username', req.body.username)
+  res.redirect('/urls'); 
+  return;
+}
+  //user is not authenticated -> send error
+  res.status(403).send('Incorrect password!');
+});
+
+app.post("/logout", (req, res) => {
+  res.clearCookie('user_id');  //should clears cookie with press of logout button
+  res.redirect('/login');
+});
+
+//*************************************************//
 app.get("/urls/new", (req, res) => {
   const userID = req.cookies['user_id'];
   const loggedIn = users[userID];
   
-  const temaplateVars = {
+  const templateVars = {
   user: loggedIn
 };
-  res.render("urls_new", temaplateVars);
+  res.render("urls_new", templateVars);
 });
 
 app.get("/u/:shortURL", (req, res) => {
@@ -160,21 +202,16 @@ app.post("/urls", (req, res) => {  //when a post request is made to /urls redire
   res.redirect(`/urls/${shortURL}`);  //redirects to /urls/:shortURL
 });
 
-// app.get("/login", (req, res) => {
-//   const templateVars = { user: null }; //login page assumes you're not already logged in so no user is logged
-//   res.render('login', templateVars);
-// });
-
-app.post("/login", (req, res) => {
-  res.cookie('username', req.body.username);
-  res.redirect('/urls');
-});
-
-app.post("/logout", (req, res) => {
-  res.clearCookie('username');
-  res.redirect('/urls');
-});
-
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
 });
+
+//FUNCTIONALITY CHECKLIST:
+// YES //
+// A user can register  
+// A user cannot register with an email address that has already been used 
+// A user sees the correct information in the header 
+// NO //
+// A user can log in with a correct email/password 
+// A user cannot log in with an incorrect email/password
+// A user can log out. 
