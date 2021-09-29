@@ -38,6 +38,15 @@ app.get("/set", (req, res) => {
   res.send(`a = ${a}`);  //will have a reference error because a is not accessible here
  });
 
+app.get("/register", (req, res) => {
+  const templateVars = {
+    username: req.cookies["username"]
+  };
+  res.render("register", templateVars);
+});
+
+//app.post("/register", (req, res) => {});
+
 app.get("/urls/new", (req, res) => {
   const temaplateVars = {
   username: req.cookies["username"]
@@ -58,15 +67,15 @@ app.get("/urls/:shortURL", (req, res) => {
   res.render("urls_show", templateVars);
 });
 
-app.post("/urls/:shortURL/delete", (req, res) => {
-  delete urlDatabase[req.params.shortURL]
-  res.redirect("/urls");
-});
-
 app.post("/urls/:shortURL", (req, res) => {
   let shortURL = req.params.shortURL;
   let newUrl = req.body.newUrl;
   urlDatabase[shortURL] = newUrl;
+  res.redirect("/urls");
+});
+
+app.post("/urls/:shortURL/delete", (req, res) => {
+  delete urlDatabase[req.params.shortURL]
   res.redirect("/urls");
 });
 
