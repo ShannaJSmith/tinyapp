@@ -17,6 +17,39 @@ const urlDatabase = {
   "9sm5xK": "http://www.google.com"
 };
 
+const users = { 
+  "userRandomID": {
+    id: "userRandomID", 
+    email: "user@example.com", 
+    password: "purple-monkey-dinosaur"
+  },
+ "user2RandomID": {
+    id: "user2RandomID", 
+    email: "user2@example.com", 
+    password: "dishwasher-funk"
+  }
+};
+
+//HELPER FUNCTIONS FOR AUTHENTICATION:
+const findUserByEmail = (email, users) => {
+  for (const userID in users) {
+    if (email === users[userID].email) {
+  return users[userID];
+}
+  }
+  return false;
+};
+
+const createUser = (email, password, users) => {
+  const id = generateRandomString();
+  users[id] = {
+    id,
+    email,
+    password
+  };
+  return id;
+};
+
 app.get("/", (req, res) => {
   res.send("Hello!");
 });
@@ -45,7 +78,26 @@ app.get("/register", (req, res) => {
   res.render("register", templateVars);
 });
 
-//app.post("/register", (req, res) => {});
+app.post("/register", (req, res) => {
+  // 1) extract user info from body of request using req.body
+  const id = generateRandomString();
+  const email = req.body.email;
+  const password = req.body.password; //const {email, password } = req.body; <- destructuring SHORTFORM
+  //console.log(id, email, password); shows me the random id generated and what is returned from the browser when an email/password is inputed
+  // 2) check if user already exists
+  const foundUser = findUserByEmail(email, users);
+  if (foundUser) {
+    return res.status(401).send('Sorry, that user is already in use!');
+  } 
+  // 3) did not find user (foundUser is false) so create a new user
+  const userID = createUser(email, password, users);
+
+  // 4) log the user. Ask browser to set a cookie with the newly generated userID
+  res.cookie('user_id', userID);
+
+  // 5) redirect to urls page (/'urls')
+res.redirect('/urls');
+});
 
 app.get("/urls/new", (req, res) => {
   const temaplateVars = {
