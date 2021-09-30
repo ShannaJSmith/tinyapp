@@ -19,6 +19,11 @@ describe('findUserByEmail', function() {
   it('should return a user with valid email', function() {
     const user = findUserByEmail("user@example.com", users)
     const expectedOutput = "userRandomID";
-    //assert statement here
+    //assert.isObject(expectedOutput, user)
   });
+  // it('a non-existent email should return undefined', function() {
+  //   const user = findUserByEmail("randomnewemail@example.com", users)
+  //   const expectedOutput = undefined;
+  //   //assert.???(expectedOutput, user)
+  // });
 });
