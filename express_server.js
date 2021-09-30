@@ -2,6 +2,7 @@
 const express = require("express");
 const bodyParser = require("body-parser");
 const cookieParser = require('cookie-parser');
+const { findUserByEmail } = require('./helpers')
 const app = express();
 const PORT = 8080; 
 app.use(bodyParser.urlencoded({extended: true}));
@@ -9,10 +10,23 @@ app.use(cookieParser());
 app.set("view engine", "ejs");
 
 //*******************DATABASE***************************//
+// const urlDatabase = {
+//   "b2xVn2": "http://www.lighthouselabs.ca",  //OLD DATABASE. DELETE LATER
+//   "9sm5xK": "http://www.google.com"
+// };
+
 const urlDatabase = {
-  "b2xVn2": "http://www.lighthouselabs.ca",
-  "9sm5xK": "http://www.google.com"
+  b6UTxQ: {
+      longURL: "https://www.tsn.ca",
+      userID: "aJ48lW"
+  },
+  i3BoGr: {
+      longURL: "https://www.google.ca",
+      userID: "aJ48lW"
+  }
 };
+
+//console.log(urlDatabase)
 
 const users = { 
   "userRandomID": {
@@ -23,7 +37,7 @@ const users = {
  "user2RandomID": {
     id: "user2RandomID", 
     email: "user2@example.com", 
-    password: "dishwasher-funk"
+    password: "abc"
   }
 };
 //****************HELPER FUNCTIONS*************//
@@ -32,14 +46,14 @@ function generateRandomString() {
   return Math.random().toString(36).substring(2, 8);
 }
 
-const findUserByEmail = (email, users) => {  //returns user info if matched, undefined if nothing inputed and false if new email used
-  for (const userID in users) {
-    if (email === users[userID].email) {
-  return users[userID];
-  }
-}
-  return false;
-};
+// const findUserByEmail = (email, users) => {   <- MOVED TO HELPERS MODULE. DELETE LATER
+//   for (const userID in users) {
+//     if (email === users[userID].email) {
+//   return users[userID];
+//   }
+// }
+//   return false;
+// };
 //console.log(findUserByEmail('user2@example.com', users));
 
 const createUser = (email, password, users) => {  //creates the randomly generated userID string for the inputted email/password
@@ -133,7 +147,7 @@ app.post("/login", (req, res) => {
   //retrieve user from database using helper function
  const user = authenticateUser(email, password, users);
  if (user) {
-  res.cookie('user_id', user.id); //changed from res.cookie('username', req.body.username)
+  res.cookie('user_id', user.id); 
   res.redirect('/urls'); 
   return;
 }
@@ -154,6 +168,9 @@ app.get("/urls/new", (req, res) => {
   const templateVars = {
   user: loggedIn
 };
+if (!loggedIn) {
+  res.redirect("/login");
+}
   res.render("urls_new", templateVars);
 });
 
@@ -188,7 +205,10 @@ app.post("/urls/:shortURL/delete", (req, res) => {
 app.get("/urls", (req, res) => {
   const userID = req.cookies['user_id'];
   const loggedIn = users[userID];
-
+  if (!loggedIn) {
+    res.status(404)
+    res.send('You must login before you can access this page')
+  }
   const templateVars = { 
     urls: urlDatabase,
     user: loggedIn };
@@ -206,12 +226,3 @@ app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
 });
 
-//FUNCTIONALITY CHECKLIST:
-// YES //
-// A user can register  
-// A user cannot register with an email address that has already been used 
-// A user sees the correct information in the header 
-// NO //
-// A user can log in with a correct email/password 
-// A user cannot log in with an incorrect email/password
-// A user can log out. 
