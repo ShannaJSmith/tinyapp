@@ -1,12 +1,20 @@
 //*********************Server setup & Dependencies*********//
 const express = require("express");
 const bodyParser = require("body-parser");
-const cookieParser = require('cookie-parser');
+//const cookieParser = require('cookie-parser');
+const cookieSession = require('cookie-session');
+const bcrypt = require('bcryptjs');
 const { findUserByEmail } = require('./helpers')
 const app = express();
 const PORT = 8080; 
 app.use(bodyParser.urlencoded({extended: true}));
-app.use(cookieParser());
+//app.use(cookieParser());
+app.use(cookieSession({
+  name: 'session',
+  keys: ['Just write something in here.', 'Sesshomaru-sama is the greatest!'],
+  // Cookie Options
+  maxAge: 24 * 60 * 60 * 1000 // 24 hours
+}));
 app.set("view engine", "ejs");
 
 //*******************DATABASE***************************//
@@ -129,7 +137,7 @@ app.post("/register", (req, res) => {
   const userID = createUser(email, password, users);
 
   // 4) log the user. Ask browser to set a cookie with the newly generated userID
-  res.cookie('user_id', userID);
+  req.session.user_id = userID; //res.cookie('user_id', userID);
 
   // 5) redirect to urls page (/'urls')
 res.redirect('/urls');
@@ -146,8 +154,9 @@ app.post("/login", (req, res) => {
   const password = req.body.password;
   //retrieve user from database using helper function
  const user = authenticateUser(email, password, users);
+ // check if user exists
  if (user) {
-  res.cookie('user_id', user.id); 
+  req.session.user_id = user.id //res.cookie('user_id', user.id); 
   res.redirect('/urls'); 
   return;
 }
@@ -156,13 +165,13 @@ app.post("/login", (req, res) => {
 });
 
 app.post("/logout", (req, res) => {
-  res.clearCookie('user_id');  //should clears cookie with press of logout button
+  req.session = null; //res.clearCookie('user_id');  //should clears cookie with press of logout button
   res.redirect('/login');
 });
 
 //*************************************************//
 app.get("/urls/new", (req, res) => {
-  const userID = req.cookies['user_id'];
+  const userID = req.session.user_id;     //req.cookies['user_id'];
   const loggedIn = users[userID];
   
   const templateVars = {
@@ -180,7 +189,7 @@ app.get("/u/:shortURL", (req, res) => {
 });
 
 app.get("/urls/:shortURL", (req, res) => {
-  const userID = req.cookies['user_id'];
+  const userID = req.session.user_id; //req.cookies['user_id'];
   const loggedIn = users[userID];
 
   const templateVars = { 
@@ -203,7 +212,7 @@ app.post("/urls/:shortURL/delete", (req, res) => {
 });
 
 app.get("/urls", (req, res) => {
-  const userID = req.cookies['user_id'];
+  const userID = req.session.user_id; //req.cookies['user_id'];
   const loggedIn = users[userID];
   if (!loggedIn) {
     res.status(404)
