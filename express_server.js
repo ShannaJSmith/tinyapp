@@ -18,23 +18,23 @@ app.use(cookieSession({
 app.set("view engine", "ejs");
 
 //*******************DATABASE***************************//
-const urlDatabase = {
-  "b2xVn2": "http://www.lighthouselabs.ca",  //OLD DATABASE. DELETE LATER
-  "9sm5xK": "http://www.google.com"
-};
-
 // const urlDatabase = {
-//   b6UTxQ: {
-//       longURL: "https://www.tsn.ca",
-//       userID: "aJ48lW"
-//   },
-//   i3BoGr: {
-//       longURL: "https://www.google.ca",
-//       userID: "aJ48lW"
-//   }
+//   "b2xVn2": "http://www.lighthouselabs.ca",  //OLD DATABASE. DELETE LATER
+//   "9sm5xK": "http://www.google.com"
 // };
 
+const urlDatabase = {
+  b6UTxQ: {
+      longURL: "https://www.tsn.ca",
+      userID: "aJ48lW"
+  },
+  i3BoGr: {
+      longURL: "https://www.google.ca",
+      userID: "aJ48lW"
+  }
+};
 //console.log(urlDatabase)
+
 const password1 = "purple-monkey-dinosaur";
 const hashedPasswordUser1 = bcrypt.hashSync(password1, 10);
 const password2 = 'abc';
@@ -51,7 +51,6 @@ const users = {
     password: hashedPasswordUser2
   }
 };
-
 //*************************************************//
 
 app.get("/", (req, res) => {
@@ -89,7 +88,6 @@ app.post("/register", (req, res) => {
   const password = req.body.password; //"const {email, password } = req.body;" <- destructuring SHORTFORM
   //console.log(id, email, password); shows me the random id generated and what is returned from the browser when an email/password is inputed
   const hashedPassword = bcrypt.hashSync(password, 10);
-  console.log(hashedPassword);
   // 2) check if user already exists
   const foundUser = findUserByEmail(email, users);
   //console.log('foundUser:', foundUser);
