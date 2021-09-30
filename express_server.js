@@ -138,7 +138,7 @@ app.post("/login", (req, res) => {
   return;
 }
   //user is not authenticated -> send error
-  res.status(403).send('Incorrect password!');
+  res.status(403).send('Incorrect password or email!');
 });
 
 app.post("/logout", (req, res) => {
