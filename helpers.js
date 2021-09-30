@@ -19,21 +19,19 @@ const authenticateUser = (email, password, users) => {
     }
   return false;
 }
+const generateRandomString = () => Math.random().toString(36).substring(2, 8);
+
+const createUser = (email, password, users) => {  //creates the randomly generated userID string for the inputted email/password
+  const userID = generateRandomString();
+  users[userID] = {
+    id: userID,
+    email,
+    password
+  };
+  return userID;
+};
+// console.log(createUser('bob@hotmail.com', 'abc', users)); --> prints the randomly generated ID
+// console.log(users);  -->now the database includes the newly generated user info
 
 
-
-
-
-
-// const authenticateUser = (email, password, users) => {  //returns entire user info (id, email, password)
-//   const foundUser = findUserByEmail(email, users);
-
-//   if (foundUser && foundUser.password === password) {
-//     console.log(password)
-//     return foundUser; // if matched log in
-//   }
-//   return false; //if passwords don't match return error msg
-// };
-//console.log(authenticateUser("ufgsgs", "dishwasher-funk", users)) //password or email doesn't match anything in the database so false
-
-module.exports = { findUserByEmail, authenticateUser };
+module.exports = { findUserByEmail, authenticateUser, createUser, generateRandomString };

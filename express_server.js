@@ -4,7 +4,7 @@ const bodyParser = require("body-parser");
 //const cookieParser = require('cookie-parser');  //replaced with cookieSession
 const cookieSession = require('cookie-session');
 const bcrypt = require('bcryptjs');
-const { findUserByEmail, authenticateUser } = require('./helpers');
+const { findUserByEmail, authenticateUser, createUser, generateRandomString } = require('./helpers');
 const app = express();
 const PORT = 8080;
 app.use(bodyParser.urlencoded({extended: true}));
@@ -51,21 +51,6 @@ const users = {
     password: hashedPasswordUser2
   }
 };
-//****************HELPER FUNCTIONS*************//
-
-const generateRandomString = () => Math.random().toString(36).substring(2, 8);
-
-const createUser = (email, password, users) => {  //creates the randomly generated userID string for the inputted email/password
-  const userID = generateRandomString();
-  users[userID] = {
-    id: userID,
-    email,
-    password
-  };
-  return userID;
-};
-// console.log(createUser('bob@hotmail.com', 'abc', users)); --> prints the randomly generated ID
-// console.log(users);  -->now the database includes the newly generated user info
 
 //*************************************************//
 
