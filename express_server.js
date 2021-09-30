@@ -33,8 +33,8 @@ const urlDatabase = {
       userID: "aJ48lW"
   }
 };
-//console.log(urlDatabase)
 
+//console.log(urlDatabase)
 const password1 = "purple-monkey-dinosaur";
 const hashedPasswordUser1 = bcrypt.hashSync(password1, 10);
 const password2 = 'abc';
@@ -51,6 +51,7 @@ const users = {
     password: hashedPasswordUser2
   }
 };
+
 //*************************************************//
 
 app.get("/", (req, res) => {
@@ -88,6 +89,7 @@ app.post("/register", (req, res) => {
   const password = req.body.password; //"const {email, password } = req.body;" <- destructuring SHORTFORM
   //console.log(id, email, password); shows me the random id generated and what is returned from the browser when an email/password is inputed
   const hashedPassword = bcrypt.hashSync(password, 10);
+  console.log(hashedPassword);
   // 2) check if user already exists
   const foundUser = findUserByEmail(email, users);
   //console.log('foundUser:', foundUser);
@@ -147,7 +149,7 @@ app.get("/urls/new", (req, res) => {
 });
 
 app.get("/u/:shortURL", (req, res) => {
-  const longURL = urlDatabase[req.params.shortURL];
+  const longURL = urlDatabase[req.params.shortURL].longURL;
   res.redirect(longURL);
 });
 
@@ -156,9 +158,10 @@ app.get("/urls/:shortURL", (req, res) => {
   const loggedIn = users[userID];
 
   const templateVars = {
-    shortURL: req.params.shortURL,   //this is b2xVn2
-    longURL: urlDatabase[req.params.shortURL],  //this is lighthouselabs.ca
+    shortURL: req.params.shortURL,  
+    longURL: urlDatabase[req.params.shortURL].longURL,  
     user: loggedIn };
+    console.log(templateVars)
   res.render("urls_show", templateVars);
 });
 
@@ -178,8 +181,7 @@ app.get("/urls", (req, res) => {
   const userID = req.session.user_id; //req.cookies['user_id'];
   const loggedIn = users[userID];
   if (!loggedIn) {
-    res.status(404);
-    res.send('You must login before you can access this page');
+    res.status(404).send('You must login before you can access this page');
   }
   const templateVars = {
     urls: urlDatabase,
@@ -188,13 +190,17 @@ app.get("/urls", (req, res) => {
 });
 
 app.post("/urls", (req, res) => {  //when a post request is made to /urls redirect to urls/:shortURL
+  const userID = req.session.user_id;
   const shortURL = generateRandomString();
   const longURL = req.body.longURL;
-  urlDatabase[shortURL] = longURL;
+  urlDatabase[shortURL] = {
+    longURL,
+    userID
+  }
+  //console.log(urlDatabase)
   res.redirect(`/urls/${shortURL}`);  //redirects to /urls/:shortURL
 });
 
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
 });
-
