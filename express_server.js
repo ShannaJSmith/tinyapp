@@ -4,7 +4,7 @@ const bodyParser = require("body-parser");
 //const cookieParser = require('cookie-parser');  //replaced with cookieSession
 const cookieSession = require('cookie-session');
 const bcrypt = require('bcryptjs');
-const { findUserByEmail } = require('./helpers');
+const { findUserByEmail, authenticateUser } = require('./helpers');
 const app = express();
 const PORT = 8080;
 app.use(bodyParser.urlencoded({extended: true}));
@@ -35,17 +35,20 @@ const urlDatabase = {
 // };
 
 //console.log(urlDatabase)
-
+const password1 = "purple-monkey-dinosaur";
+const hashedPasswordUser1 = bcrypt.hashSync(password1, 10);
+const password2 = 'abc';
+const hashedPasswordUser2 = bcrypt.hashSync(password2, 10);
 const users = {
   "userRandomID": {
     id: "userRandomID",
     email: "user@example.com",
-    password: "purple-monkey-dinosaur"
+    password: hashedPasswordUser1
   },
   "user2RandomID": {
     id: "user2RandomID",
     email: "user2@example.com",
-    password: "abc"
+    password: hashedPasswordUser2
   }
 };
 //****************HELPER FUNCTIONS*************//
@@ -63,15 +66,6 @@ const createUser = (email, password, users) => {  //creates the randomly generat
 };
 // console.log(createUser('bob@hotmail.com', 'abc', users)); --> prints the randomly generated ID
 // console.log(users);  -->now the database includes the newly generated user info
-
-const authenticateUser = (email, password, users) => {  //returns entire user info (id, email, password)
-  const foundUser = findUserByEmail(email, users);
-  if (foundUser && foundUser.password === password) {
-    return foundUser; // if matched log in
-  }
-  return false; //if passwords don't match return error msg
-};
-//console.log(authenticateUser("ufgsgs", "dishwasher-funk", users)) //password or email doesn't match anything in the database so false
 
 //*************************************************//
 
@@ -109,23 +103,22 @@ app.post("/register", (req, res) => {
   const email = req.body.email;
   const password = req.body.password; //"const {email, password } = req.body;" <- destructuring SHORTFORM
   //console.log(id, email, password); shows me the random id generated and what is returned from the browser when an email/password is inputed
-  console.log("id: ", id);
+  const hashedPassword = bcrypt.hashSync(password, 10);
+  console.log(hashedPassword);
   // 2) check if user already exists
   const foundUser = findUserByEmail(email, users);
   //console.log('foundUser:', foundUser);
+  if (!email || !password) {
+    return res.status(400).send('Please enter an email and password!');
+  }
   if (foundUser) {
     res.status(401).send('Sorry, that user is already in use!');
     return;
   }
-  if (!email || !password) {
-    return res.status(400).send('Please enter an email and password!');
-  }
   // 3) did not find user (foundUser is false) so create a new user
-  const userID = createUser(email, password, users);
-
+  const userID = createUser(email, hashedPassword, users);
   // 4) log the user. Ask browser to set a cookie with the newly generated userID
   req.session.user_id = userID; //res.cookie('user_id', userID);
-
   // 5) redirect to urls homepage (/'urls')
   res.redirect('/urls');
 });
@@ -141,14 +134,14 @@ app.post("/login", (req, res) => {
   const password = req.body.password;
   //retrieve user from database using helper function
   const user = authenticateUser(email, password, users);
-  // check if user exists
+  // check if user exists, set the cookie and redirect to /urls/ homepage
   if (user) {
     req.session.user_id = user.id; //res.cookie('user_id', user.id);
     res.redirect('/urls');
     return;
   }
   //user is not authenticated -> send error
-  res.status(403).send('Incorrect password or email!');
+  res.status(401).send('Incorrect password or email!');
 });
 
 app.post("/logout", (req, res) => {
