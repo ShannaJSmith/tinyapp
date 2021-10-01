@@ -18,10 +18,6 @@ app.use(cookieSession({
 app.set("view engine", "ejs");
 
 //*******************DATABASE***************************//
-// const urlDatabase = {
-//   "b2xVn2": "http://www.lighthouselabs.ca",  //OLD DATABASE. DELETE LATER
-//   "9sm5xK": "http://www.google.com"
-// };
 
 const urlDatabase = {
   b6UTxQ: {
@@ -149,6 +145,10 @@ app.get("/urls/new", (req, res) => {
 });
 
 app.get("/u/:shortURL", (req, res) => {
+  if (!urlDatabase[req.params.shortURL]) {
+    res.status(401).send('This page does not exist');
+    return;
+  }
   const longURL = urlDatabase[req.params.shortURL].longURL;
   res.redirect(longURL);
 });
@@ -156,6 +156,13 @@ app.get("/u/:shortURL", (req, res) => {
 app.get("/urls/:shortURL", (req, res) => {
   const userID = req.session.user_id; //req.cookies['user_id'];
   const loggedIn = users[userID];
+  if (!urlDatabase[req.params.shortURL]) {
+    res.status(401).send('This page does not exist');
+    return;
+  }
+  if (urlDatabase[req.params.shortURL].userID !== userID) {
+    res.status(401).send('You cannot access this page');
+  };
 
   const templateVars = {
     shortURL: req.params.shortURL,  
