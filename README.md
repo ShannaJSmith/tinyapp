@@ -4,7 +4,7 @@ TinyApp is a full stack web application built with Node and Express that allows 
 
 ## Final Product
 
-!["screenshot description"](#)
+!["Screenshot of the registration page"](https://github.com/ShannaJSmith/tinyapp/blob/master/docs/register-page.png?raw=true)
 
 !["screenshot description"](#)
 
