@@ -100,7 +100,7 @@ app.post("/register", (req, res) => {
   // 3) did not find user (foundUser is false) so create a new user
   const userID = createUser(email, hashedPassword, users);
   // 4) log the user. Ask browser to set a cookie with the newly generated userID
-  req.session.user_id = userID; //res.cookie('user_id', userID);
+  req.session.user_id = userID;
   // 5) redirect to urls homepage (/'urls')
   res.redirect('/urls');
 });
@@ -178,12 +178,12 @@ app.post("/urls/:shortURL", (req, res) => {
   const userID = req.session.user_id;
   const loggedIn = users[userID];
   if (!loggedIn) {
-     return res.redirect('/urls');
+    return res.redirect('/urls');
   }
   let shortURL = req.params.shortURL;
   let longURL = req.body.newURL;
   if (urlDatabase[shortURL].userID !== loggedIn.id) {
-    return res.redirect('/urls');   
+    return res.redirect('/urls');
   }
   urlDatabase[shortURL] = { longURL, userID };
   res.redirect('/urls');
@@ -193,18 +193,18 @@ app.post("/urls/:shortURL/delete", (req, res) => {
   const userID = req.session.user_id;
   const loggedIn = users[userID];
   if (!loggedIn) {
-    return res.status(401).send("You cannot delete this.")
+    return res.status(401).send("You cannot delete this.");
   }
   const shortURL = req.params.shortURL;
   if (urlDatabase[shortURL].userID !== userID) {
-    return res.status(401).send("You cannot delete a link that is not yours.")
+    return res.status(401).send("You cannot delete a link that is not yours.");
   }
   delete urlDatabase[shortURL];
   res.redirect("/urls");
 });
 
 app.get("/urls", (req, res) => {
-  const userID = req.session.user_id; 
+  const userID = req.session.user_id;
   const loggedIn = users[userID];
   if (!loggedIn) {
     res.status(401).send("<h2>Hmmm...🤔</h2> <p>Looks like you need to <a href='/login'>login</a> to access this page.</p>");
@@ -217,16 +217,16 @@ app.get("/urls", (req, res) => {
   res.render("urls_index", templateVars);
 });
 
-app.post("/urls", (req, res) => {  
+app.post("/urls", (req, res) => {
   const userID = req.session.user_id;
-  //Generate random shortURL. Store the shortURL and longURL in urlDatabase 
+  //Generate random shortURL. Store the shortURL and longURL in urlDatabase
   const shortURL = generateRandomString();
   const longURL = req.body.longURL;
   urlDatabase[shortURL] = {
     longURL,
     userID
   };
-  res.redirect(`/urls/${shortURL}`); 
+  res.redirect(`/urls/${shortURL}`);
 });
 
 app.listen(PORT, () => {
