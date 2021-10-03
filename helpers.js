@@ -3,9 +3,9 @@ const bcrypt = require('bcryptjs');
 const findUserByEmail = (email, users) => {  //returns user info if matched and false if new email is used
   for (const userID in users) {
     if (email === users[userID].email) {
-  return users[userID];
+      return users[userID];
+    }
   }
-}
   return false;
 };
 
@@ -15,10 +15,10 @@ const authenticateUser = (email, password, users) => {
   const hashedPassword = foundUser.password;
 
   if (foundUser && bcrypt.compareSync(suppliedPassword, hashedPassword)) {
-      return foundUser;
-    }
+    return foundUser;
+  }
   return false;
-}
+};
 const generateRandomString = () => Math.random().toString(36).substring(2, 8);
 
 const createUser = (email, password, users) => {  //creates the randomly generated userID string for the inputted email/password
@@ -33,5 +33,20 @@ const createUser = (email, password, users) => {  //creates the randomly generat
 // console.log(createUser('bob@hotmail.com', 'abc', users)); --> prints the randomly generated ID
 // console.log(users);  -->now the database includes the newly generated user info
 
+const urlsForUser = (userID, urlDatabase) => {
+  let filteredURLs = {};
+  for (const key in urlDatabase) {
+    if (urlDatabase[key].userID === userID) {
+      filteredURLs[key] = urlDatabase[key];
+    }
+  }
+  return filteredURLs;
+};
 
-module.exports = { findUserByEmail, authenticateUser, createUser, generateRandomString };
+
+module.exports = { findUserByEmail,
+  authenticateUser,
+  createUser,
+  generateRandomString,
+  urlsForUser
+};
